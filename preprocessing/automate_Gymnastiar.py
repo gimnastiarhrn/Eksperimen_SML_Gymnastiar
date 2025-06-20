@@ -33,16 +33,13 @@ def clean_outliers(df: pd.DataFrame, columns: list, z_thresh: float = 3.0) -> pd
 
 
 def encode_and_scale(df: pd.DataFrame, target_column: str = "Price") -> Tuple[pd.DataFrame, pd.Series, pd.DataFrame]:
-    """
-    One-hot encode kolom kategorikal dan scaling kolom numerik.
-    """
     df = df.copy()
-    
+
     # One-hot encoding
     categorical_columns = df.select_dtypes(include='object').columns
     df_encoded = pd.get_dummies(df, columns=categorical_columns, drop_first=True)
 
-    # Pisah fitur dan target
+    # Split X and y
     X = df_encoded.drop(target_column, axis=1)
     y = df_encoded[target_column]
 
@@ -50,10 +47,21 @@ def encode_and_scale(df: pd.DataFrame, target_column: str = "Price") -> Tuple[pd
     numerical_columns = ['Number of Ratings', 'Number of Reviews']
     numerical_columns = [col for col in numerical_columns if col in X.columns]
 
+    # Convert to float & drop NaN
+    for col in numerical_columns:
+        X[col] = pd.to_numeric(X[col], errors='coerce')
+
+    # Drop rows with NaNs after coercion
+    X = X.dropna(subset=numerical_columns)
+    y = y.loc[X.index]
+
+    # Skip scaling if data kosong
+    if X[numerical_columns].shape[0] == 0:
+        raise ValueError("Tidak ada data tersisa setelah preprocessing. Cek apakah outlier cleaning terlalu ketat.")
+
     scaler = StandardScaler()
     X[numerical_columns] = scaler.fit_transform(X[numerical_columns].astype(np.float64))
 
-    # Gabungkan kembali X + y untuk disimpan sebagai clean file
     df_clean_encoded = X.copy()
     df_clean_encoded[target_column] = y
 
