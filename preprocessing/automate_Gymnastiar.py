@@ -86,7 +86,7 @@ def preprocess_pipeline(file_path: str, output_dir: str = "processed") -> Tuple[
 
 
 def main():
-    dataset_path = "../laptopPrice_raw.csv"
+    dataset_path = "laptopPrice_raw.csv"
     output_path = "processed"
     preprocess_pipeline(dataset_path, output_path)
 
