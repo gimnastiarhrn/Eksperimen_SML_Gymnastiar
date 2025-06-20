@@ -22,10 +22,14 @@ def load_dataset(file_path: str) -> pd.DataFrame:
 
 
 def clean_outliers(df: pd.DataFrame, columns: list, z_thresh: float = 3.0) -> pd.DataFrame:
-    """
-    Menghapus outlier berdasarkan Z-score.
-    """
+    df = df.copy()
+
+    # Pastikan kolom-kolom numerik dikonversi ke float
+    for col in columns:
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+
     return df[(np.abs(stats.zscore(df[columns])) < z_thresh).all(axis=1)].copy()
+
 
 
 def encode_and_scale(df: pd.DataFrame, target_column: str = "Price") -> Tuple[pd.DataFrame, pd.Series, pd.DataFrame]:
